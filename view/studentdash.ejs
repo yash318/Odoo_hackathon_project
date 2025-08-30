@@ -1,0 +1,40 @@
+<% layout("layout") %>
+
+<!-- Welcome Header -->
+<h4 class="mb-4 text-success">Welcome, <%= student.name %> 👋</h4>
+
+<div class="row">
+  <!-- Applied Jobs -->
+  <div class="col-md-4">
+    <div class="card text-center shadow-sm border-success">
+      <div class="card-body">
+        <h5 class="card-title">Applied Jobs</h5>
+        <p class="display-6 text-primary">
+          <%= student.applications ? student.applications.length : 0 %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming Exams -->
+  <div class="col-md-4">
+    <div class="card text-center shadow-sm border-warning">
+      <div class="card-body">
+        <h5 class="card-title">Upcoming Exams</h5>
+        <p class="display-6 text-warning">5</p> 
+      </div>
+    </div>
+  </div>
+
+  <!-- Placement Status -->
+  <div class="col-md-4">
+    <div class="card text-center shadow-sm border-danger">
+      <div class="card-body">
+        <h5 class="card-title">Placement Status</h5>
+        <p class="display-6 <%= student.applications.some(app => app.status === "Offer" || app.status === "Joined") ? "text-success" : "text-danger" %>">
+          <%= student.applications.some(app => app.status === "Offer" || app.status === "Joined") ? "Placed" : "Not Placed" %>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
