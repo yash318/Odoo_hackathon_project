@@ -1,0 +1,122 @@
+<% layout('layout') %>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Create Your Account</h2>
+
+                <form action="/signup" method="POST" class="needs-validation" novalidate>
+                    <!-- Role Selection -->
+                    <div class="mb-3 text-center">
+                        <p class="form-label">Select Role</p>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="role" id="roleStudent" value="student" checked>
+                            <label class="form-check-label" for="roleStudent">Student</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="role" id="roleCompany" value="company">
+                            <label class="form-check-label" for="roleCompany">Company</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="role" id="roleTpo" value="tpo">
+                            <label class="form-check-label" for="roleTpo">TPO</label>
+                        </div>
+                    </div>
+
+                    <!-- Common Fields -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                         <div class="valid-feedback">Looks good!</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                         <div class="invalid-feedback">Please provide a valid email.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+
+                    <!-- Dynamic Fields -->
+                    <div id="dynamic-fields">
+                        <!-- Student Fields -->
+                        <div id="student-fields">
+                             <div class="mb-3">
+                                <label for="rollNo" class="form-label">Roll Number</label>
+                                <input type="text" class="form-control" id="rollNo" name="rollNo" required>
+                            </div>
+                             <div class="mb-3">
+                                <label for="branch" class="form-label">Branch</label>
+                                <input type="text" class="form-control" id="branch" name="branch" required>
+                            </div>
+                        </div>
+                        <!-- Company Fields -->
+                        <div id="company-fields" style="display: none;">
+                             <div class="mb-3">
+                                <label for="description" class="form-label">Company Description</label>
+                                <textarea class="form-control" id="description" name="description"></textarea>
+                            </div>
+                             <div class="mb-3">
+                                <label for="contactnumber-company" class="form-label">Contact Number</label>
+                                <input type="tel" class="form-control" id="contactnumber-company" name="contactnumber">
+                            </div>
+                        </div>
+                        <!-- TPO Fields -->
+                        <div id="tpo-fields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="institutename" class="form-label">Institute Name</label>
+                                <input type="text" class="form-control" id="institutename" name="institutename">
+                            </div>
+                             <div class="mb-3">
+                                <label for="contactnumber-tpo" class="form-label">Contact Number</label>
+                                <input type="tel" class="form-control" id="contactnumber-tpo" name="contactnumber">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                         <button class="btn btn-primary" type="submit">Create Account</button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-3">
+                    <small class="text-muted">Already have an account? <a href="/login">Login here</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // JavaScript to toggle visibility of role-specific fields
+    const studentFields = document.getElementById('student-fields');
+    const companyFields = document.getElementById('company-fields');
+    const tpoFields = document.getElementById('tpo-fields');
+
+    document.querySelectorAll('input[name="role"]').forEach(radio => {
+        radio.addEventListener('change', (event) => {
+            const role = event.target.value;
+            studentFields.style.display = role === 'student' ? 'block' : 'none';
+            companyFields.style.display = role === 'company' ? 'block' : 'none';
+            tpoFields.style.display = role === 'tpo' ? 'block' : 'none';
+        });
+    });
+
+    // Bootstrap form validation script
+    (() => {
+        'use strict'
+        const forms = document.querySelectorAll('.needs-validation')
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>

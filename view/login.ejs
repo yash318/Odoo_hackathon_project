@@ -1,0 +1,65 @@
+<% layout('layout') %>
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                 <h2 class="card-title text-center mb-4">Login to Placement Tracker</h2>
+                <form action="/login" method="POST" class="needs-validation" novalidate>
+
+                    <!-- Role Selection -->
+                    <div class="mb-3 text-center">
+                        <p class="form-label">Select Your Role</p>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="role" id="roleStudent" value="student" checked>
+                            <label class="form-check-label" for="roleStudent">Student</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="role" id="roleCompany" value="company">
+                            <label class="form-check-label" for="roleCompany">Company</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="role" id="roleTpo" value="tpo">
+                            <label class="form-check-label" for="roleTpo">TPO</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="email">Email</label>
+                        <input class="form-control" type="email" name="email" id="email" autofocus required>
+                         <div class="invalid-feedback">Please provide your email.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="password">Password</label>
+                        <input class="form-control" type="password" name="password" id="password" required>
+                         <div class="invalid-feedback">Password cannot be empty.</div>
+                    </div>
+                    <div class="d-grid">
+                        <button class="btn btn-success">Login</button>
+                    </div>
+                </form>
+                 <div class="text-center mt-3">
+                    <small class="text-muted">Don't have an account? <a href="/signup">Sign up</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Bootstrap form validation script
+    (() => {
+        'use strict'
+        const forms = document.querySelectorAll('.needs-validation')
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>

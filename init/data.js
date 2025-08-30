@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
 const Student = require("../models/student");
-const Company = require("../models/compny");  
+const Company = require("../models/compny");
 const TPO = require("../models/tpo");
+const JobApplication = require("../models/jobaplication");
+
 mongoose.connect("mongodb://127.0.0.1:27017/Odoo_p1", {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -11,10 +13,13 @@ mongoose.connect("mongodb://127.0.0.1:27017/Odoo_p1", {
 
 async function seedData() {
     try {
+        // Clear old data
         await Student.deleteMany({});
         await Company.deleteMany({});
         await TPO.deleteMany({});
+        await JobApplication.deleteMany({});
 
+        // Insert Students
         const students = await Student.insertMany([
             {
                 name: "Yash Chaudhary",
@@ -39,6 +44,7 @@ async function seedData() {
                 resumeLinks: ["resume_aditi.pdf"]
             }
         ]);
+
         const companies = await Company.insertMany([
             {
                 name: "Google",
@@ -81,7 +87,9 @@ async function seedData() {
                 ]
             }
         ]);
-        const tpo = await TPO.create({
+
+        // Insert TPO
+        await TPO.create({
             name: "Training & Placement Officer",
             email: "tpo@college.com",
             password: "hashedpassword5",
@@ -93,6 +101,65 @@ async function seedData() {
             announcements: ["Welcome to Placement Season 2025!"],
             reports: ["Initial placement drive started."]
         });
+
+       
+        const google = companies[0];
+        const infosys = companies[1];
+
+        await JobApplication.insertMany([
+            {
+                company: google._id,
+                jobId: google.jobs[0]._id,
+                companyName: "Google",
+                location: "Bangalore",
+                package: "30 LPA",
+                eligibility: {
+                    department: ["CSE", "IT"],
+                    minCgpa: 8,
+                    allowedBacklogs: 0
+                },
+                deadline: new Date("2025-12-31"),
+                overview: "Work on innovative projects with cutting-edge technology.",
+                skills: ["DSA", "System Design", "JavaScript"],
+                compensation: {
+                    fixed: 25,
+                    variable: 5,
+                    otherBenefits: "Health Insurance, Stock Options"
+                },
+                timeline: {
+                    testDate: new Date("2025-10-05"),
+                    interviewDate: new Date("2025-10-10"),
+                    offerDate: new Date("2025-10-15")
+                },
+                notes: "High priority application"
+            },
+            {
+                company: infosys._id,
+                jobId: infosys.jobs[0]._id,
+                companyName: "Infosys",
+                location: "Pune",
+                package: "5 LPA",
+                eligibility: {
+                    department: ["CSE", "IT", "ECE"],
+                    minCgpa: 6,
+                    allowedBacklogs: 2
+                },
+                deadline: new Date("2025-09-30"),
+                overview: "Entry-level system engineer role.",
+                skills: ["Java", "SQL"],
+                compensation: {
+                    fixed: 4,
+                    variable: 1,
+                    otherBenefits: "Training Programs, Relocation Support"
+                },
+                timeline: {
+                    testDate: new Date("2025-09-15"),
+                    interviewDate: new Date("2025-09-20"),
+                    offerDate: new Date("2025-09-25")
+                },
+                notes: "Good for freshers"
+            }
+        ]);
 
         console.log("Sample data inserted successfully!");
         mongoose.connection.close();

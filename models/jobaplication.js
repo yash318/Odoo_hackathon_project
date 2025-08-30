@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const jobApplicationSchema = new mongoose.Schema({
     company: { type: mongoose.Schema.Types.ObjectId, ref: "Company", required: true },
-    jobId: { type: mongoose.Schema.Types.ObjectId, required: true }, // link to specific job
+    jobId: { type: mongoose.Schema.Types.ObjectId, required: true }, 
 
     companyName: String,
     location: String,

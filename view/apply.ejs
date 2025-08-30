@@ -1,0 +1,59 @@
+<% layout('layout') %>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-light">
+                <div class="card-body p-4 p-md-5">
+                    <h1 class="card-title text-center mb-4">Apply for Job</h1>
+                    <h4 class="text-center text-muted mb-4"><%= job.companyName %> - Software Engineer</h4>
+
+                    <form action="/jobs/<%= job._id %>/apply" method="POST" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="fullName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="fullName" name="fullName" value="<%= currentUser.name %>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="enrollmentNumber" class="form-label">Enrollment Number</label>
+                            <input type="text" class="form-control" id="enrollmentNumber" name="enrollmentNumber" value="<%= currentUser.rollNo %>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="branch" class="form-label">Branch</label>
+                            <select class="form-select" id="branch" name="branch" required>
+                                <option value="" selected disabled>-- Select Branch --</option>
+                                <option value="CSE" <%= currentUser.branch.includes('CSE') ? 'selected' : '' %>>Computer Science</option>
+                                <option value="IT" <%= currentUser.branch.includes('IT') ? 'selected' : '' %>>Information Technology</option>
+                                <option value="ECE" <%= currentUser.branch.includes('ECE') ? 'selected' : '' %>>Electronics & Communication</option>
+                            </select>
+                        </div>
+                         <div class="mb-3">
+                            <label for="passingYear" class="form-label">Passing Year</label>
+                            <input type="text" class="form-control" id="passingYear" name="passingYear" placeholder="e.g., 2025" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="<%= currentUser.email %>" required>
+                        </div>
+                         <div class="mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter phone number" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="resume" class="form-label">Resume</label>
+                            <input class="form-control" type="file" id="resume" name="resume">
+                            <div class="form-text">Please upload your resume (PDF, DOCX).</div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="coverLetter" class="form-label">Cover Letter</label>
+                            <textarea class="form-control" id="coverLetter" name="coverLetter" rows="4" placeholder="Write a short cover letter..."></textarea>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="/jobs/<%= job._id %>" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Submit Application</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

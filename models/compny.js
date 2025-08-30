@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
+const passportLocalMongoose = require('passport-local-mongoose');
 
 const companySchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true },
-    password: { type: String, required: true },
+    
     description: String,
     jobs: [{
         title: String,
@@ -21,8 +22,11 @@ const companySchema = new mongoose.Schema({
             student: { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
             status: { type: String, enum: ["Pending", "Accepted", "Rejected"], default: "Pending" }
         }],
-        deadline: Date
+        deadline: Date,
+        hrcontact:[Number],
+        contactnumber:[Number]
     }]
 });
+companySchema.plugin(passportLocalMongoose, { usernameField: "email" });
 
 module.exports = mongoose.model("Company", companySchema);
