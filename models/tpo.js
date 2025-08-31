@@ -15,8 +15,8 @@ const tpoSchema = new mongoose.Schema({
         type: String, 
         createdOn: { type: Date, default: Date.now }
     }],
-    institutename:[String],
-    contactnumber:[Number]
+    institutename:String,
+    contactnumber:Number
 });
 tpoSchema.plugin(passportLocalMongoose, { usernameField: "email" });
 module.exports = mongoose.model("TPO", tpoSchema);

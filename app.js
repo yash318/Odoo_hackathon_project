@@ -7,6 +7,8 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
 
 // Models
 const Student = require("./models/student");
@@ -14,6 +16,9 @@ const Company = require("./models/compny");
 const TPO = require("./models/tpo");
 const JobApplication = require("./models/jobaplication");
 const Application = require("./models/application");
+const Test = require('./models/test');
+const CompanyTest = require('./models/companytest');
+const Resume = require("./models/resume");
 
 const app = express();
 
@@ -102,8 +107,10 @@ app.post('/signup', async (req, res, next) => {
             user = new Student({ email, name, rollNo, branch });
             await Student.register(user, password);
         } else if (role === 'company') {
+            console.log("selected")
             const { description, contactnumber } = req.body;
             user = new Company({ email, name, description, contactnumber });
+            console.log(user)
             await Company.register(user, password);
         } else if (role === 'tpo') {
             const { institutename, contactnumber } = req.body;
@@ -208,7 +215,7 @@ app.get("/jobs", isLoggedIn, async (req, res) => {
                     model: 'JobApplication' 
                 }
             });
-            console.log(student.applications[0].job.company)
+            // console.log(student.applications[0].job.company)
 
         res.render("jobs", {
             title: "Job Applications",
@@ -281,6 +288,152 @@ app.post('/jobs/:id/apply', isLoggedIn, async (req, res) => {
         res.redirect(`/jobs/${req.params.id}`);
     }
 });
+
+app.get("/practice", isLoggedIn, async (req, res) => {
+    try {
+        // Fetch all available mock tests
+        const mockTests = await Test.find({});
+        
+        // Fetch all company tests
+        const companyTests = await CompanyTest.find({});
+
+        res.render("practice", {
+            title: "Practice & Exams",
+            mockTests,
+            companyTests
+        });
+    } catch (err) {
+        console.error(err);
+        req.flash('error', 'Could not load the practice and exam page.');
+        res.redirect('/');
+    }
+});
+
+
+app.get("/resume", isLoggedIn, async (req, res) => {
+    const resume = await Resume.findOne({ student: req.user._id });
+    res.render("resume", { title: "Resume Builder", resume });
+});
+
+app.post("/resume", isLoggedIn, async (req, res) => {
+    const toArray = (data) => data ? (Array.isArray(data) ? data : [data]) : [];
+
+    const { fullName, email, phone, summary, skillsCsv } = req.body;
+    
+    const eduInstitutes = toArray(req.body.eduInstitute);
+    const eduDegrees = toArray(req.body.eduDegree);
+    const eduYears = toArray(req.body.eduYear);
+    const expCompanies = toArray(req.body.expCompany);
+    const expRoles = toArray(req.body.expRole);
+    const expYears = toArray(req.body.expYear);
+    const projNames = toArray(req.body.projName);
+    const projDescs = toArray(req.body.projDesc);
+    const achievements = toArray(req.body.achieve);
+
+    const payload = {
+        student: req.user._id,
+        fullName, email, phone, summary,
+        skills: (skillsCsv || "").split(",").map(s => s.trim()).filter(Boolean),
+        education: eduInstitutes.map((institute, i) => ({
+            institute: institute,
+            degree: eduDegrees[i],
+            year: eduYears[i]
+        })).filter(e => e.institute),
+        experience: expCompanies.map((company, i) => ({
+            company: company,
+            role: expRoles[i],
+            year: expYears[i]
+        })).filter(e => e.company),
+        projects: projNames.map((name, i) => ({
+            name: name,
+            description: projDescs[i]
+        })).filter(p => p.name),
+        achievements: achievements.filter(Boolean)
+    };
+
+    await Resume.findOneAndUpdate(
+        { student: req.user._id },
+        { $set: payload },
+        { upsert: true }
+    );
+
+    res.redirect("/preview");
+});
+
+app.get("/preview", isLoggedIn, async (req, res) => {
+    const resume = await Resume.findOne({ student: req.user._id });
+    if (!resume) return res.redirect("/resume");
+    res.render("preview", { title: "Resume Preview", resume });
+});
+app.get("/resume/download", isLoggedIn, async (req, res) => {
+    const resume = await Resume.findOne({ student: req.user._id });
+    if (!resume) return res.redirect("/resume");
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=resume.pdf");
+
+    const doc = new PDFDocument();
+    doc.pipe(res);
+
+   
+    doc.fontSize(20).text(resume.fullName, { align: "center" });
+    doc.moveDown(0.5);
+    doc.fontSize(12).text(`${resume.email} | ${resume.phone}`, { align: "center" });
+    doc.moveDown(1);
+
+    
+    if (resume.summary) {
+        doc.fontSize(14).text("Summary", { underline: true });
+        doc.fontSize(12).text(resume.summary);
+        doc.moveDown();
+    }
+
+    
+    if (resume.skills?.length) {
+        doc.fontSize(14).text("Skills", { underline: true });
+        doc.fontSize(12).text(resume.skills.join(", "));
+        doc.moveDown();
+    }
+
+   
+    if (resume.education?.length) {
+        doc.fontSize(14).text("Education", { underline: true });
+        resume.education.forEach(e => {
+            doc.fontSize(12).text(`${e.degree} - ${e.institute} (${e.year})`);
+        });
+        doc.moveDown();
+    }
+
+    if (resume.experience?.length) {
+        doc.fontSize(14).text("Experience", { underline: true });
+        resume.experience.forEach(x => {
+            doc.fontSize(12).text(`${x.role} at ${x.company} (${x.year})`);
+        });
+        doc.moveDown();
+    }
+
+   
+    if (resume.projects?.length) {
+        doc.fontSize(14).text("Projects", { underline: true });
+        resume.projects.forEach(p => {
+            doc.fontSize(12).text(`${p.name}: ${p.description}`);
+        });
+        doc.moveDown();
+    }
+
+    
+    if (resume.achievements?.length) {
+        doc.fontSize(14).text("Achievements", { underline: true });
+        resume.achievements.forEach(a => {
+            doc.fontSize(12).text(`• ${a}`);
+        });
+        doc.moveDown();
+    }
+
+    doc.end();
+});
+
+
 
 const PORT = 8080;
 app.listen(PORT, () => {

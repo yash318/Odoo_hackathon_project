@@ -1,0 +1,62 @@
+<% layout('layout') %>
+<h2>Resume Builder</h2>
+
+<form action="/resume" method="POST">
+  <div class="mb-3">
+    <label>Name</label>
+    <input class="form-control" name="fullName" value="<%= resume?.fullName || '' %>">
+  </div>
+  <div class="mb-3">
+    <label>Email</label>
+    <input class="form-control" name="email" value="<%= resume?.email || '' %>">
+  </div>
+  <div class="mb-3">
+    <label>Phone</label>
+    <input class="form-control" name="phone" value="<%= resume?.phone || '' %>">
+  </div>
+  <div class="mb-3">
+    <label>Summary</label>
+    <textarea class="form-control" name="summary"><%= resume?.summary || '' %></textarea>
+  </div>
+  <div class="mb-3">
+    <label>Skills (comma separated)</label>
+    <input class="form-control" name="skillsCsv" value="<%= (resume?.skills||[]).join(', ') %>">
+  </div>
+
+  <h5>Education</h5>
+  <div id="eduWrap">
+    <% (resume?.education?.length ? resume.education : [{}]).forEach(e => { %>
+      <div class="row mb-2">
+        <div class="col"><input class="form-control" name="eduInstitute" placeholder="Institute" value="<%= e.institute||'' %>"></div>
+        <div class="col"><input class="form-control" name="eduDegree" placeholder="Degree" value="<%= e.degree||'' %>"></div>
+        <div class="col"><input class="form-control" name="eduYear" placeholder="Year" value="<%= e.year||'' %>"></div>
+      </div>
+    <% }) %>
+  </div>
+
+  <h5>Experience</h5>
+  <div id="expWrap">
+    <% (resume?.experience?.length ? resume.experience : [{}]).forEach(x => { %>
+      <div class="row mb-2">
+        <div class="col"><input class="form-control" name="expCompany" placeholder="Company" value="<%= x.company||'' %>"></div>
+        <div class="col"><input class="form-control" name="expRole" placeholder="Role" value="<%= x.role||'' %>"></div>
+        <div class="col"><input class="form-control" name="expYear" placeholder="Year" value="<%= x.year||'' %>"></div>
+      </div>
+    <% }) %>
+  </div>
+
+  <h5>Projects</h5>
+  <div id="projWrap">
+    <% (resume?.projects?.length ? resume.projects : [{}]).forEach(p => { %>
+      <div class="row mb-2">
+        <div class="col"><input class="form-control" name="projName" placeholder="Project Name" value="<%= p.name||'' %>"></div>
+        <div class="col"><input class="form-control" name="projDesc" placeholder="Description" value="<%= p.description||'' %>"></div>
+      </div>
+    <% }) %>
+  </div>
+
+  <h5>Achievements</h5>
+  <textarea class="form-control" name="achieve"><%= (resume?.achievements||[]).join('\n') %></textarea>
+
+  <button class="btn btn-primary mt-3">Save</button>
+</form>

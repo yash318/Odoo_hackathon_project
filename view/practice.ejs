@@ -1,0 +1,100 @@
+<% layout('layout') %>
+
+<div class="container mt-4">
+    <h1 class="mb-4">
+        <i class="bi bi-file-earmark-text"></i> Practice & Exam
+    </h1>
+
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs" id="examTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="mock-tab" data-bs-toggle="tab" data-bs-target="#mock-content" type="button" role="tab" aria-controls="mock-content" aria-selected="true">
+                Practice & Mock up Exam
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="company-tab" data-bs-toggle="tab" data-bs-target="#company-content" type="button" role="tab" aria-controls="company-content" aria-selected="false">
+                Company's Test
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="examTabsContent">
+        <!-- Practice & Mock up Exam Pane -->
+        <div class="tab-pane fade show active" id="mock-content" role="tabpanel" aria-labelledby="mock-tab">
+            <div class="p-3">
+                <h4 class="mb-4">Available Mock Tests</h4>
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    <% if(mockTests.length > 0) { %>
+                        <% mockTests.forEach(test => { %>
+                            <div class="col">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title fw-bold"><%= test.title %></h5>
+                                        <p class="card-text text-muted small">
+                                            Duration: <%= test.duration %> mins | Questions: <%= test.questions %>
+                                        </p>
+                                        <p class="card-text">
+                                            <strong>Topics:</strong> <%= test.topics.join(', ') %>
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <% let badgeClass = 'bg-secondary'; %>
+                                            <% if (test.difficulty === 'Beginner') badgeClass = 'bg-success'; %>
+                                            <% if (test.difficulty === 'Intermediate') badgeClass = 'bg-warning text-dark'; %>
+                                            <% if (test.difficulty === 'Advanced') badgeClass = 'bg-danger'; %>
+                                            <span class="badge rounded-pill <%= badgeClass %>"><%= test.difficulty %></span>
+                                            <a href="#" class="btn btn-primary">Start Test</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <p>No mock tests are available at the moment.</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company's Test Pane -->
+        <div class="tab-pane fade" id="company-content" role="tabpanel" aria-labelledby="company-tab">
+            <div class="p-3">
+                <h4 class="mb-4">Assigned Company Tests</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Company</th>
+                                <th scope="col">Job Role</th>
+                                <th scope="col">Date & Time</th>
+                                <th scope="col">Duration</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if(companyTests.length > 0) { %>
+                                <% companyTests.forEach(test => { %>
+                                    <tr>
+                                        <td><%= test.companyName %></td>
+                                        <td><%= test.jobRole %></td>
+                                        <td><%= new Date(test.date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) %></td>
+                                        <td><%= test.duration %> mins</td>
+                                        <td><span class="badge bg-<%= test.status === 'Completed' ? 'success' : 'warning text-dark' %>"><%= test.status %></span></td>
+                                        <td><button class="btn btn-sm btn-primary" <%= test.status === 'Completed' ? 'disabled' : '' %>>Start Test</button></td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted p-4">You have no company tests assigned.</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+                 <small class="text-muted d-block mt-3">Note: Tests will be available to start only during the scheduled window. Status will update after completion.</small>
+            </div>
+        </div>
+    </div>
+</div>

@@ -22,10 +22,11 @@ const companySchema = new mongoose.Schema({
             student: { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
             status: { type: String, enum: ["Pending", "Accepted", "Rejected"], default: "Pending" }
         }],
+       
+    }],
         deadline: Date,
-        hrcontact:[Number],
-        contactnumber:[Number]
-    }]
+        hrcontact:String,
+        contactnumber:String
 });
 companySchema.plugin(passportLocalMongoose, { usernameField: "email" });
 
