@@ -25,7 +25,6 @@ const companySchema = new mongoose.Schema({
        
     }],
         deadline: Date,
-        hrcontact:String,
         contactnumber:String
 });
 companySchema.plugin(passportLocalMongoose, { usernameField: "email" });

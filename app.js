@@ -24,8 +24,8 @@ const app = express();
 
 // MongoDB Connection
 mongoose.connect("mongodb://127.0.0.1:27017/Odoo_p1")
-  .then(() => console.log("MongoDB connected"))
-  .catch(err => console.log(err));
+    .then(() => console.log("MongoDB connected"))
+    .catch(err => console.log(err));
 
 // View Engine Setup
 app.engine("ejs", ejsMate);
@@ -103,14 +103,14 @@ app.post('/signup', async (req, res, next) => {
         const { email, name, password, role } = req.body;
         let user;
         if (role === 'student') {
+            console.log(req.body)
             const { rollNo, branch } = req.body;
             user = new Student({ email, name, rollNo, branch });
             await Student.register(user, password);
         } else if (role === 'company') {
-            console.log("selected")
+            console.log(req.body)
             const { description, contactnumber } = req.body;
             user = new Company({ email, name, description, contactnumber });
-            console.log(user)
             await Company.register(user, password);
         } else if (role === 'tpo') {
             const { institutename, contactnumber } = req.body;
@@ -161,7 +161,7 @@ app.post('/login', (req, res, next) => {
 
 
 app.get('/logout', (req, res, next) => {
-    req.logout(function(err) {
+    req.logout(function (err) {
         if (err) { return next(err); }
         req.flash('success', "Goodbye!");
         res.redirect('/login');
@@ -177,9 +177,9 @@ app.get("/", async (req, res) => {
         }
 
         if (req.user.constructor.modelName === 'Student') {
-             const student = await Student.findById(req.user._id)
+            const student = await Student.findById(req.user._id)
                 .populate("applications.company");
-             return res.render("studentdash", {
+            return res.render("studentdash", {
                 title: "Dashboard",
                 student
             });
@@ -206,16 +206,16 @@ const isLoggedIn = (req, res, next) => {
 app.get("/jobs", isLoggedIn, async (req, res) => {
     try {
         const allJobs = await JobApplication.find({});
-      
+
         const student = await Student.findById(req.user._id)
             .populate({
-                path: 'applications', 
+                path: 'applications',
                 populate: {
-                    path: 'job',      
-                    model: 'JobApplication' 
+                    path: 'job',
+                    model: 'JobApplication'
                 }
             });
-            // console.log(student.applications[0].job.company)
+        // console.log(student.applications[0].job.company)
 
         res.render("jobs", {
             title: "Job Applications",
@@ -268,7 +268,7 @@ app.post('/jobs/:id/apply', isLoggedIn, async (req, res) => {
         const job = await JobApplication.findById(id);
         const student = await Student.findById(req.user._id);
 
-    
+
         const newApplication = new Application({
             ...req.body,
             job: job._id,
@@ -293,7 +293,7 @@ app.get("/practice", isLoggedIn, async (req, res) => {
     try {
         // Fetch all available mock tests
         const mockTests = await Test.find({});
-        
+
         // Fetch all company tests
         const companyTests = await CompanyTest.find({});
 
@@ -315,11 +315,12 @@ app.get("/resume", isLoggedIn, async (req, res) => {
     res.render("resume", { title: "Resume Builder", resume });
 });
 
+
 app.post("/resume", isLoggedIn, async (req, res) => {
     const toArray = (data) => data ? (Array.isArray(data) ? data : [data]) : [];
 
-    const { fullName, email, phone, summary, skillsCsv } = req.body;
-    
+    const { fullName, email, phone, summary, skillsCsv, achieve } = req.body;
+
     const eduInstitutes = toArray(req.body.eduInstitute);
     const eduDegrees = toArray(req.body.eduDegree);
     const eduYears = toArray(req.body.eduYear);
@@ -328,7 +329,8 @@ app.post("/resume", isLoggedIn, async (req, res) => {
     const expYears = toArray(req.body.expYear);
     const projNames = toArray(req.body.projName);
     const projDescs = toArray(req.body.projDesc);
-    const achievements = toArray(req.body.achieve);
+
+    const achievements = (achieve || "").split(/\r?\n/).map(a => a.trim()).filter(Boolean);
 
     const payload = {
         student: req.user._id,
@@ -348,7 +350,7 @@ app.post("/resume", isLoggedIn, async (req, res) => {
             name: name,
             description: projDescs[i]
         })).filter(p => p.name),
-        achievements: achievements.filter(Boolean)
+        achievements: achievements 
     };
 
     await Resume.findOneAndUpdate(
@@ -359,7 +361,6 @@ app.post("/resume", isLoggedIn, async (req, res) => {
 
     res.redirect("/preview");
 });
-
 app.get("/preview", isLoggedIn, async (req, res) => {
     const resume = await Resume.findOne({ student: req.user._id });
     if (!resume) return res.redirect("/resume");
@@ -375,27 +376,27 @@ app.get("/resume/download", isLoggedIn, async (req, res) => {
     const doc = new PDFDocument();
     doc.pipe(res);
 
-   
+
     doc.fontSize(20).text(resume.fullName, { align: "center" });
     doc.moveDown(0.5);
     doc.fontSize(12).text(`${resume.email} | ${resume.phone}`, { align: "center" });
     doc.moveDown(1);
 
-    
+
     if (resume.summary) {
         doc.fontSize(14).text("Summary", { underline: true });
         doc.fontSize(12).text(resume.summary);
         doc.moveDown();
     }
 
-    
+
     if (resume.skills?.length) {
         doc.fontSize(14).text("Skills", { underline: true });
         doc.fontSize(12).text(resume.skills.join(", "));
         doc.moveDown();
     }
 
-   
+
     if (resume.education?.length) {
         doc.fontSize(14).text("Education", { underline: true });
         resume.education.forEach(e => {
@@ -412,7 +413,7 @@ app.get("/resume/download", isLoggedIn, async (req, res) => {
         doc.moveDown();
     }
 
-   
+
     if (resume.projects?.length) {
         doc.fontSize(14).text("Projects", { underline: true });
         resume.projects.forEach(p => {
@@ -421,15 +422,13 @@ app.get("/resume/download", isLoggedIn, async (req, res) => {
         doc.moveDown();
     }
 
-    
     if (resume.achievements?.length) {
         doc.fontSize(14).text("Achievements", { underline: true });
         resume.achievements.forEach(a => {
-            doc.fontSize(12).text(`• ${a}`);
+            doc.fontSize(12).text(`• ${a}`, { continued: false });
         });
         doc.moveDown();
     }
-
     doc.end();
 });
 
@@ -437,6 +436,6 @@ app.get("/resume/download", isLoggedIn, async (req, res) => {
 
 const PORT = 8080;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
 
