@@ -1,0 +1,206 @@
+<% layout('layout') %>
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>My Profile</h1>
+        <button type="button" id="edit-button" class="btn btn-primary">
+            <i class="bi bi-pencil-square me-2"></i> Edit Profile
+        </button>
+    </div>
+
+    <form id="profile-form">
+        <!-- Personal & Academic Details -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Academic Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Full Name</label>
+                        <p class="text-muted"><%= student.name %></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Email</label>
+                        <p class="text-muted"><%= student.email %></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Roll Number</label>
+                        <p class="text-muted"><%= student.rollNo %></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Branch</label>
+                        <p class="text-muted"><%= student.branch %></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="cgpa" class="form-label fw-bold"><i class="bi bi-award me-2"></i>CGPA</label>
+                        <input type="number" step="0.01" class="form-control profile-field" id="cgpa" name="cgpa" value="<%= student.cgpa || '' %>" disabled>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills & Projects -->
+        <div class="card shadow-sm mb-4">
+             <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-tools me-2"></i>Professional Details</h5>
+            </div>
+            <div class="card-body">
+                 <div class="mb-3">
+                    <label for="skills" class="form-label fw-bold"><i class="bi bi-lightbulb me-2"></i>Skills</label>
+                    <textarea class="form-control profile-field" id="skills" name="skills" rows="3" placeholder="e.g. JavaScript, Python, React" disabled><%= student.skills.join(', ') %></textarea>
+                    <div class="form-text">Enter your skills separated by commas.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="projects" class="form-label fw-bold"><i class="bi bi-kanban me-2"></i>Projects</label>
+                    <textarea class="form-control profile-field" id="projects" name="projects" rows="4" placeholder="e.g. Placement Tracker - A web app for managing placements." disabled><%= student.projects.join('\n') %></textarea>
+                     <div class="form-text">List each project on a new line.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="form-actions" style="display: none;" class="text-end mb-4">
+             <span id="save-status" class="text-success me-3"></span>
+            <button type="button" id="cancel-button" class="btn btn-secondary">Cancel</button>
+            <button type="submit" id="save-button" class="btn btn-primary">Save Changes</button>
+        </div>
+    </form>
+
+    <!-- My Recent Applications Section -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-briefcase-fill me-2"></i>My Recent Applications</h5>
+        </div>
+        <div class="card-body">
+            <% if(student.applications && student.applications.length) { %>
+                <ul class="list-group list-group-flush">
+                    <% student.applications.slice(0, 5).forEach(app => { %> <%# Show the 5 most recent %>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div>
+                                <h6 class="mb-0"><%= app.job ? app.job.companyName : 'N/A' %></h6>
+                                <small class="text-muted"><%= app.job ? 'Software Engineer' : 'Role not available' %></small>
+                            </div>
+                            <% let badgeClass = 'bg-secondary'; %>
+                            <% if (app.status === 'Shortlisted') badgeClass = 'bg-primary'; %>
+                            <% if (app.status === 'Interview') badgeClass = 'bg-warning text-dark'; %>
+                            <% if (app.status === 'Offer') badgeClass = 'bg-success'; %>
+                            <span class="badge rounded-pill <%= badgeClass %>"><%= app.status %></span>
+                        </li>
+                    <% }); %>
+                </ul>
+                <div class="text-center mt-3">
+                    <a href="/jobs" class="btn btn-outline-primary btn-sm">View All Applications</a>
+                </div>
+            <% } else { %>
+                <div class="text-center p-3">
+                    <p class="text-muted mb-2">You haven't applied to any jobs yet.</p>
+                    <a href="/jobs" class="btn btn-primary">Find a Job</a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+
+    <!-- Resume Management -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>My Resumes</h5>
+        </div>
+        <div class="card-body">
+            <% if(savedResume) { %>
+                <div class="text-center p-3">
+                    <p class="text-muted mb-2">You have a saved resume. View it to make edits or download.</p>
+                    <a href="/preview" class="btn btn-primary">See Resume</a>
+                </div>
+            <% } else { %>
+                <div class="text-center p-3">
+                    <p class="text-muted mb-2">You haven't created a resume yet.</p>
+                    <a href="/resume" class="btn btn-primary">Create one now!</a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const editButton = document.getElementById('edit-button');
+    const saveButton = document.getElementById('save-button');
+    const cancelButton = document.getElementById('cancel-button');
+    const formActions = document.getElementById('form-actions');
+    const profileFields = document.querySelectorAll('.profile-field');
+    const profileForm = document.getElementById('profile-form');
+    const saveStatus = document.getElementById('save-status');
+
+    // Store initial values in case of cancellation
+    const initialValues = {};
+    profileFields.forEach(field => {
+        initialValues[field.id] = field.value;
+    });
+
+    const toggleEditMode = (isEditing) => {
+        profileFields.forEach(field => {
+            field.disabled = !isEditing;
+        });
+        formActions.style.display = isEditing ? 'block' : 'none';
+        editButton.style.display = isEditing ? 'none' : 'block';
+        saveStatus.textContent = ''; // Clear status message
+        if(isEditing) {
+            profileFields[0].focus(); // Focus on the first editable field
+        }
+    };
+
+    editButton.addEventListener('click', () => toggleEditMode(true));
+
+    cancelButton.addEventListener('click', () => {
+        // Restore initial values
+        profileFields.forEach(field => {
+            field.value = initialValues[field.id];
+        });
+        toggleEditMode(false);
+    });
+
+    profileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        saveStatus.textContent = 'Saving...';
+        saveButton.disabled = true;
+
+        const formData = new FormData(profileForm);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/profile/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                saveStatus.textContent = '✓ Saved successfully!';
+                // Update initial values to new saved state
+                profileFields.forEach(field => {
+                    initialValues[field.id] = field.value;
+                });
+                 setTimeout(() => {
+                    toggleEditMode(false);
+                }, 2000); // Increased timeout for better user experience
+            } else {
+                const result = await response.json();
+                saveStatus.textContent = result.message || 'Failed to save.';
+                saveStatus.classList.remove('text-success');
+                saveStatus.classList.add('text-danger');
+            }
+        } catch (error) {
+            console.error('Save error:', error);
+            saveStatus.textContent = 'An error occurred.';
+            saveStatus.classList.remove('text-success');
+            saveStatus.classList.add('text-danger');
+        } finally {
+            saveButton.disabled = false;
+        }
+    });
+});
+</script>
+

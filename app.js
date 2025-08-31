@@ -113,6 +113,7 @@ app.post('/signup', async (req, res, next) => {
             user = new Company({ email, name, description, contactnumber });
             await Company.register(user, password);
         } else if (role === 'tpo') {
+            console.log(req.body);
             const { institutename, contactnumber } = req.body;
             user = new TPO({ email, name, institutename, contactnumber });
             await TPO.register(user, password);
@@ -432,7 +433,63 @@ app.get("/resume/download", isLoggedIn, async (req, res) => {
     doc.end();
 });
 
+app.get("/profile", isLoggedIn, async (req, res) => {
+    try {
+        // Find the logged-in student and populate their recent applications
+        const student = await Student.findById(req.user._id).populate({
+            path: 'applications',
+            options: { sort: { 'appliedOn': -1 } }, // Sort to get the most recent first
+            populate: {
+                path: 'job',
+                model: 'JobApplication'
+            }
+        });
 
+        // Also, find if an editable resume exists for this student
+        const savedResume = await Resume.findOne({ student: req.user._id });
+
+        if (!student) {
+            req.flash('error', 'Could not find your profile.');
+            return res.redirect('/');
+        }
+        
+        // Render the profile page, passing both student and savedResume data
+        res.render("profile", {
+            title: "My Profile",
+            student,
+            savedResume // Pass the editable resume data to the view
+        });
+    } catch (err) {
+        console.error(err);
+        req.flash('error', 'Something went wrong while loading your profile.');
+        res.redirect('/');
+    }
+});
+
+// This route handles the profile update from the form's AJAX request
+app.post("/profile/update", isLoggedIn, async (req, res) => {
+    try {
+        const { cgpa, skills, projects } = req.body;
+
+        // Sanitize and prepare the data for the database
+        const skillsArray = (skills || "").split(",").map(s => s.trim()).filter(Boolean);
+        const projectsArray = (projects || "").split(/\r?\n/).map(p => p.trim()).filter(Boolean);
+        
+        // Find the student by their ID and update their information
+        await Student.findByIdAndUpdate(req.user._id, {
+            cgpa,
+            skills: skillsArray,
+            projects: projectsArray
+        });
+        
+        // Send a success response back to the browser
+        res.status(200).json({ message: "Profile updated successfully!" });
+    } catch (err) {
+        console.error("Profile update error:", err);
+        // Send an error response if something goes wrong
+        res.status(500).json({ message: "Server error while updating profile." });
+    }
+});
 
 const PORT = 8080;
 app.listen(PORT, () => {
